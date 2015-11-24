@@ -1,40 +1,57 @@
 package com.REST;
 
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.server.ResourceConfig;
+import java.sql.*;
+import java.util.Locale;
 
-import java.io.IOException;
-import java.net.URI;
-
-
+/**
+ * Created by varuchin on 24.11.2015.
+ */
 public class Solution {
-    public static final String BASE_URI = "http://localhost:8081/myapp/";
 
-    /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
-     * @return Grizzly HTTP server.
-     */
-    public static HttpServer startServer() {
-        // create a resource config that scans for JAX-RS resources and providers
-        // in com.example package
-        final ResourceConfig rc = new ResourceConfig().packages("com.example");
+    public static void main(String[] args) {
 
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
-    }
+        Locale.setDefault(Locale.ENGLISH);
 
-    /**
-     * Main method.
-     * @param args
-     * @throws IOException
-     */
-    public static void main(String[] args) throws IOException {
-        final HttpServer server = startServer();
-        System.out.println(String.format("Jersey app started with WADL available at "
-                + "%sapplication.wadl\nHit enter to stop it...", BASE_URI));
-        System.in.read();
-        server.stop();
+        String user = "system";//Логин пользователя
+        String password = "oblivion";//Пароль пользователя
+        String url = "jdbc:oracle:thin:@n103934.merann.ru:1521/XE";//URL адрес
+        String driver = "oracle.jdbc.driver.OracleDriver";//Имя драйвера
+
+
+
+
+        try {
+            Class.forName(driver);//Регистрируем драйвер
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        Connection c = null;//Соединение с БД}
+
+        try {
+            c = DriverManager.getConnection(url, user, password);//Установка соединения с БД
+            System.out.println("Connected.");
+            Statement st = c.createStatement();//Готовим запрос
+            ResultSet rs = st.executeQuery("select * from LIBRARY");//Выполняем запрос к БД, результат в переменной rs
+
+            while (rs.next()) {
+                System.out.println(rs.getString("AUTHOR"));//Последовательно для каждой строки выводим значение из колонки ColumnName
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            //Обязательно необходимо закрыть соединение
+            try {
+                if (c != null) {
+                    c.close();
+                    System.out.println("Closed.");
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
     }
 }
